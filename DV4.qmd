@@ -1,0 +1,271 @@
+---
+title: "DV4"
+format: html
+embed-resources: true
+editor: visual
+---
+
+# Chapter 4 - Data Visualization
+
+Here, we are going to practice and reinforce some of the key ideas from chapter 4.
+
+## Question 1
+
+We are going to work with a data-set of TV Ratings taken from IMDB.
+
+Let's read it in and see what we have:
+
+```{r message = FALSE}
+library(tidyverse)
+```
+
+```{r}
+tv_ratings <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/tv_ratings.csv")
+
+tv_ratings
+```
+
+We notice that each row is a season-title pair. Then, we get the average rating for that season of that show, and the corresponding genre.
+
+The first thing that we are going to look at is how rating develops across seasons, for different genres. To do this, we need shows that have lasted a while. The following bit of code counts how many seasons each show has and then keeps those shows that have had 5 seasons or more.
+
+```{r}
+tv_long <- tv_ratings %>% 
+  group_by(title) %>% 
+  summarise(num_seasons = n()) %>% 
+  ungroup() %>% 
+  left_join(tv_ratings, by = "title") 
+
+tv_long <- tv_long %>% 
+  filter(num_seasons >= 5)
+```
+
+Use `tv_long` to make a line-plot to trace how average ratings evolve across seasons. Remember to use the group aesthetic so that each line represents one show.
+
+```{r}
+ggplot(tv_long, 
+       aes(x = seasonNumber,
+           y = av_rating,
+           group = title, 
+           color = title)) +
+  labs(title = "How Average Ratings Evolve across Seasons", x = "Season Number", 
+       y = "Average Rating", caption = "Source: IMBD") +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+It should look fairly messy. **Can you draw any conclusions from it?**
+
+-   It is difficult to draw any conclusions from this graph, as it is near impossible to read. However, one can still conclude that the average rating for shows, especially at the beginning, mostly range from 7 to 9. However, as shows continue, most experience a drop in their average rating, often around the onset of season 5. Some shows recover from this dip in average rating, whereas other shows do not.
+
+## Question 2
+
+Facet the plot above by `genres` so that we can see patterns more clearly.
+
+```{r}
+ggplot(tv_long, 
+       aes(x = seasonNumber,
+           y = av_rating,
+           group = title, 
+           color = title)) +
+   labs(title = "How Average Ratings Evolve across Seasons", x = "Season Number", 
+       y = "Average Rating", caption = "Source: IMBD") +
+  geom_line() +
+  facet_wrap(~genres) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**What shows tend to last longer?**
+
+-   Generally speaking, shows of the following genre-combinations tend to last longer: crime/drama/mystery, drama/romance, drama/fantasy/horror, among others.
+
+**Do ratings change much across seasons?**
+
+-   While the plot is difficult to dissect, the ratings --- for the most part --- change across seasons, that's to say: very few shows have relatively-unchanged ratings across the seasons. Most shows experience some sort of fluctuation in ratings across the seasons. Others are more steady, but it is less common.
+
+**Can you identify that show on `Drama, Family, Fantasy` whose ratings just plummeted?**
+
+```{r}
+tv_long %>% 
+  group_by(genres) %>% 
+  filter(genres == "Drama,Family,Fantasy")
+  
+```
+
+-   Based on the results of the `filter` function, the name of the show is "Are You Afraid of the Dark?".
+
+## Question 3
+
+Let's look at the `genres` that show up in the best rated shows. First, filter the original data set - `tv_ratings` - so that it only includes rows where the average rating is higher or equal than 9.
+
+```{r}
+best_rated <- tv_ratings %>% 
+  filter(av_rating >= 9)
+```
+
+Make a bar-plot where the x-axis is `genres`.
+
+```{r}
+ggplot(best_rated,
+       aes(x = genres)) +
+  labs(title = "High-Rated Shows by Genre-Combination",
+       x = "Genre-Combination", y = "Count", caption = "Source: IMBD") +
+  geom_bar(fill = "red") +
+  theme_minimal()
+```
+
+The result should be hard to read - the names of the genres are quite long. Add `coord_flip()` to the end of your ggplot call and watch the results get clearer.
+
+```{r}
+ggplot(best_rated,
+       aes(x = genres)) +
+  labs(title = "High-Rated Shows by Genre-Combination",
+       x = "Genre-Combination", y = "Count", caption = "Source: IMBD") +
+  geom_bar(fill = "red") +
+  theme_minimal() +
+  coord_flip()
+```
+
+**Tell me what `coord_flip()` does.**
+
+```{r}
+?coord_flip
+```
+
+-   According to the graph, as well as R, `coord_flip()` switches the axes, that is: the original x-axis (i.e., genre-combination) is now on the y-axis, whereas the original y-axis (i.e., count) is now on the x-axis. This allowed us to now read the name of the genre-combinations.
+
+**What is the genre with the most top-rated shows?**
+
+-   According to the bar-plot, "drama" is the genre-combination with the most top-rated shows (i.e., shows with average ratings greater than or equal to 9).
+
+## Question 4
+
+As a comedy fan, I am quite distraught by the results. I want to compare the range of average ratings that comedies and dramas get. Surely, there are many bad comedies, but the best comedies should rival the best dramas. Right?
+
+For this, we need to do a bit of wrangling that I am going to walk you through.
+
+First, because the `genres` names are so convoluted, I am going to classify everything that includes the word "Comedy" as a comedy.
+
+```{r}
+comedies_dramas <- tv_ratings %>% 
+  mutate(is_comedy = if_else(str_detect(genres, "Comedy"), 
+                             1, 
+                             0)) %>% 
+  filter(is_comedy == 1 | genres == "Drama") %>% 
+  mutate(genres = if_else(genres == "Drama", 
+                          "Drama", 
+                          "Comedy"))
+
+comedies_dramas
+```
+
+Now, you should have a data-set with shows that are categorized as either drama or comedies.
+
+Plot a density-plot that shows the distribution of average ratings for both comedies and dramas.
+
+```{r}
+ggplot(comedies_dramas,
+       aes(x = av_rating, group = genres, 
+           color = genres, fill = genres)) +
+  labs(title = "Average Ratings of Comedies and Dramas", x = "Average Rating", 
+       y = "Density", caption = "Source: IMBD", 
+       color = "Genre", fill = "Genre") + 
+  geom_density(alpha = 0.2) +
+  theme_minimal()
+```
+
+**How does my prediction above hold? Are dramas rated higher?**
+
+-   Unfortunately, the predication above does not hold true. Based on the density plot, the spread of the density-plot for dramas is slightly wider toward the higher-end of the scale. On the other hand, the spread of the density-plot for comedies is more narrow, despite also being on the higher-end of the scale. Therefore, the wider spread of the density-plot for dramas, especially at the higher-end of the scale, indicates that dramas are still rated higher, on average.
+
+## Question 5
+
+Let's experiment with different ways of visualizing this. First, do the same plot using histograms.
+
+```{r}
+ggplot(comedies_dramas,
+       aes(x = av_rating, group = genres, fill = genres)) +
+  labs(title = "Average Ratings of Comedies And Dramas",
+       x= "Average Rating", y = "Count", 
+       fill = "Genre", caption = "Source: IMDB") +
+  geom_histogram(color = "white", bins = 35, 
+                 position = "identity", alpha = .5) +
+  theme_minimal()
+```
+
+**What additional information does this give you?**
+
+-   The histogram reveals that there way more comedies than dramas, which suggests that the data sizes are not comparable and thus, the weight of average ratings vary by genre.
+
+Now, use `geom_freqpoly()`.
+
+```{r}
+ggplot(comedies_dramas,
+       aes(x = av_rating, group = genres, color = genres)) +
+  labs(title = "Average Ratings of Comedies And Dramas",
+       x= "Average Rating", y = "Count", 
+       color = "Genre", caption = "Source: IMDB") +
+  geom_freqpoly() +
+  theme_minimal()
+```
+
+**What do you notice?**
+
+-   The frequency-plot, similar to the histogram, reflects the count at any average rating by genre. However, instead of using bars, the frequency-plot uses a continuous line, which travels through the peaks of each histogram bar. In that sense, the two are quite similar.
+
+**Of the three plots, which one do you think is more informative?**
+
+-   Of the three plots, at least to me, the frequency-plot appears the most informative. Similiar to the histogram, the frequency-plot reflects the count at any given average rating, which provides important context that the density-plot does not. However, still similar to the density-plot, it also depicts the width for the distribution of average scores by genre and thus, indicates which genre is rated higher, on average.
+
+## Question 6
+
+Let's now explore whether the actual quality of the show corresponded to how many people were paying attention. The column `share` indicates the share of viewership that that show and season acquired. We are going to examine the relationship between average rating and share of viewership.
+
+Take our `comedies_dramas` data-set, and make a plot where average rating is on the x-axis and share on the y-axis. Use `geom_bin_2d()` to make the plot.
+
+```{r}
+ggplot(comedies_dramas,
+       aes(x = av_rating, y = share)) +
+  labs(x= "Average Rating",
+     y = "Share of Viewership",
+     title = "Relationship between Average Ratings and Share of Viewership",
+     caption = "Source: IMDB") +
+  geom_bin_2d() +
+  theme_minimal()
+```
+
+**What additional information does this give you in comparison to a scatter-plot? What do you see?**
+
+-   Unlike a scatter-plot, the plot above divides the plane into rectangles, counts the number of cases in each rectangle, and then maps the number of cases to the rectangle's fill. In theory, it shows the concentration at any one rectangle, which corresponds to the gradient on the left, as opposed to an overcrowded scatter-plot.
+
+-   More specifically, the plot above indicates that the average rating of a show does not necessarily correlate with its share of viewership, that is: many shows that received high average ratings, specifically within the range of 8, failed to capture a large share of viewership. However, there are a few exceptions to the statement above, especially given the profound outlier.
+
+Now add `genres` to the fill aesthetic.
+
+```{r}
+ggplot(comedies_dramas,
+       aes(x = av_rating, y = share, fill = genres)) +
+  labs(x= "Average Rating",
+     y = "Share of Viewership",
+     title = "Relationship between Average Ratings and Share of Viewership",
+     caption = "Source: IMDB", fill = "Genre") +
+  geom_bin_2d(alpha = 0.6) +
+  theme_minimal()
+```
+
+**What patterns do you see?**
+
+-   In general, my previous statement about the correlation (or lack thereof) between the average rating of a show and its share of viewership remains. However, it is important to note that, despite similar or even lower average ratings, comedies experience a higher share of viewership than dramas. Though, there is one exception given the outlier in the drama genre.
+
+**Can you identify that big outlier that apparently captured the nation?**
+
+```{r}
+best_share <- comedies_dramas %>% 
+  filter(share >= 20)
+
+best_share
+```
+
+-   Based on the results of the `filter` function, the outlier is Dekalog, Season 1.
