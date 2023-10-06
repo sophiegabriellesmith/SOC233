@@ -53,15 +53,15 @@ ggplot(perc_by_tourn,
        aes(x = school, y = pct)) +
   labs(title = "Percentage of Tournaments ending in Championship by School", 
        x = "School", y = "Percentage of Tournament Wins (%)", caption = "Source: WNCAA") +
-  scale_y_continuous(limits = c(0, 100)) +
   geom_col(position = "dodge2", fill = "purple") +
+  scale_y_continuous(limits = c(0, 100)) +
   theme_minimal() +
   coord_flip()
 ```
 
 **What patterns do you see? Who are the two teams that have won the most?**
 
--   On the bar-plot, it is apparent that two teams have won the most tournaments as "champions." Those two schools include: UConn (30%) and Tennessee (22%). Otherwise, most other schools have only won tournaments as "champions" only 3-5% of the time, depending on the specific school.
+-   On the bar-plot, it is clear that two teams have won the most tournaments as "champions." Those two schools include: UConn (30%) and Tennessee (22%). Otherwise, most other schools have only won tournaments as "champions" only 3-5% of the time, depending which one specifically.
 
 ## Question 2
 
@@ -105,7 +105,7 @@ ggplot(winners,
        x = "School", y = "Seed", caption = "Source: WNCAA",
        fill = "School") +
   geom_boxplot(outlier.shape = NA) +
-  geom_jitter() +
+  geom_jitter(alpha = 0.3) +
   coord_flip()
 ```
 
@@ -125,13 +125,13 @@ ggplot(winners,
        x = "School", y = "Seed", caption = "Source: WNCAA",
        fill = "School") +
   geom_boxplot(outlier.shape = NA) +
-  geom_jitter() +
+  geom_jitter(alpha = 0.3) +
   coord_flip()
 ```
 
 **Describe the results? Any surprises?**
 
--   The box-plots for Tennessee and UConn are situated closest to 1 on the x-axis, which corresponds to a lower seed. This means that they received a higher initial ranking. Similarly, the whiskers for Tennessee and UConn are relatively short, indicating a lack of variability in the data, which is also proven by the density of data-points around 1. In other words, Tennessee and UConn receive a higher initial ranking quite often. Overall, the box-plot is unsurprising for Tennessee and UConn, given their percentage of tournaments won as "champions."
+-   The box-plots for Tennessee and UConn are situated closest to 1 on the x-axis, which corresponds to a lower seed. This means that they received a higher initial ranking. Similarly, the whiskers for Tennessee and UConn are relatively shorter, indicating a lack of variability in this data, which is further proven by the density of data-points around 1. In other words, Tennessee and UConn receive a higher initial ranking quite often. Overall, the box-plot is unsurprising for Tennessee and UConn, given their percentage of tournaments won as "champions."
 
 Try to make the same plot using `geom_violin()` instead of `geom_boxplot()`.
 
@@ -147,7 +147,7 @@ ggplot(winners,
 
 **Which visualization do you think is more informative?**
 
--   From what I can see, `geom_violin` serves as a blend of `geom_boxplot` and `geom_density`. It demonstrates both the spread and the density of data-points without the addition of data-points via `geom_jitter`.
+-   From what I can see, `geom_violin` serves as a blend of `geom_boxplot` and `geom_density`. It demonstrates both the spread and the density of data-points without the need for the addition of data-points via `geom_jitter`.
 
 -   However, barring any extremes (i.e., Tennessee or UConn), `geom_violin` fails to visually capture the differences among the other schools. In addition, it does not depict that numerical summaries, such as the median or interquartile range, that `geom_boxplot` does to demonstrate variability in data.
 
@@ -164,17 +164,17 @@ ggplot(winners,
        x = "School", y = "Seed", caption = "Source: WNCAA",
        color = "School") +
   geom_point() +
-  geom_jitter() +
+  geom_jitter(alpha = 0.3) +
   coord_flip()
 ```
 
 **Why does it not work very well?**
 
--   Without `geom_jitter`, the scatter-plot above only demonstrates a handful of data-points, which leads me to suspect there are overcrowded data-points. With `geom_point` alone, the data is arbitrary, as it does not visually demonstrate any sort of trends in spread, density, etc. Thus, it is difficult to draw conclusions on the data. However, even with `geom_jitter`, the graph still remains a poor depiction of spread, density, and outliers.
+-   With `geom_point` alone, or even with `geom_jitter` in tandem, the data is arbitrary, as it does not visually demonstrate any sort of trends in terms of the spread or density of data --- given the lack of depiction for the median, interquartile range, outliers, etc.
 
 ## Question 4
 
-Okay, now let's try the `summarize_if()` verb. Let's make a new data frame by taking the `winners` data-set, grouping by school, and take the `mean()` and `sd()` of the columns, **if** they are numeric. HINT: you can also use the newer `across()` syntax for this if you prefer. It looks like this:
+Okay, now let's try the `summarize_if()` verb. Let's make a new data frame by taking the `winners` data-set, grouping by school, and take the `mean()` and `sd()` of the columns, **if** they are numeric.
 
 ```{r}
 winners_mean_sd <- winners  %>%  
@@ -202,7 +202,7 @@ ggplot(winners_mean_sd,
 
 **Describe the results. Which tournament winner had the lowest regular season win percentage?**
 
--   Texas A&M had the lowest regular season win percentage at approximately 73%, on average, whereas UConn had the highest regular season win percentage at approximately 97%. Surprisingly, however, Tennessee only had the fifth-highest regular season win percentage (on average) at approximately 83%, which is surprising given its other successes detailed above.
+-   On average, Texas A&M had the lowest regular season win percentage at approximately 73%, whereas UConn had the highest regular season win percentage at approximately 97%. Surprisingly, however, Tennessee only had the fifth-highest regular season win percentage (on average) at approximately 83%, which is surprising given its other successes detailed above.
 
 Now, let's try to take into account the standard deviation. Use the `geom_pointrange` to show the intervals of one standard deviation below and above the mean (just like Figure 5.15 in the online version of socviz.co).
 
