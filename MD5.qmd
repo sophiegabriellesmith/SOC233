@@ -229,22 +229,26 @@ twitch_lang_view |>
 
 -   Given the separation by language, this function is a more insightful summary than the previous one.
 
--   In fact, it appears that Russian, Spanish, Arabic, and English channels have the highest mean for `average_viewers`, which would allow one to think they have the highest count for average viewership. However, it is necessary to plot the data to see exactly what the count is, since the mean is dependent on the number of channels, of which there may only be a handful for each language.
+-   In fact, it appears that Russian, Spanish, Arabic, and English channels have the highest mean for `average_viewers`, which would allow one to think they have the highest average viewership. However, it is necessary to plot the data to explore further, since the mean is dependent on the number of channels, of which there may only be a handful for each language.
 
-Now, let's plot the two variables via a histogram and box-plot:
+Now, let's plot the two variables via a histogram to gauge the number of channels by language:
 
 ```{r}
 ggplot(twitch_lang_view,
-       aes(x = language, y = average_viewers)) +
-  labs(x = "Language", y = "Average Number of Viewers", 
-       title = "Relationship between Language & Average Viewership", 
+       aes(x = average_viewers)) +
+  labs(x = "Count", y = "Average Number of Viewers", 
+       title = "Count of Channels within Ranges of Average Viewership by Language", 
        caption = "Source: Twitch Data") +
-  geom_col(fill = "blue") +
+  geom_histogram(fill = "blue") +
+  facet_wrap(~language)+
   theme_minimal() +
-  coord_flip()
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
--   In agreement with the prior summary, English channels confer with the highest count for average viewership. However, unlike the prior results, Russian, Arabic, and Spanish channels do not have as high of a count for average viewership as the mean would allow one to think.
+-   This histogram provides more insight into the number of channels by language.
+-   In agreement with the prior summary, the English language has the highest count of channels within the range of 0 and 50,000 for average viewership. However, unlike the prior results, Russian, Arabic, and Spanish channels do not have as high of a count of channels within the same range; although, there are some outliers in the data to consider, based on the small bars for English and Russian that are all the way to the right of the x-axis.
+
+Now, let's attempt to visualize the outliers via a box-plot:
 
 ```{r}
 ggplot(twitch_lang_view,
@@ -260,7 +264,7 @@ ggplot(twitch_lang_view,
 
 -   Admittedly, the box-plot is a lot more difficult to interpret than the histogram. However, it does provide more insight into the spread and presence of outliers in data.
 
--   For English channels, the median and interquartile range is not unlike that of Arabic channels. For Russian and Spanish channels, the median for each language is larger but confers with less variability in the data, given the smaller spread. Regardless, the spread of average viewership for English channels certainly does confer with greater variability in the data, as well as the increased presence of outliers, which may explain the higher mean and count for average viewership.
+-   For English channels, the median and interquartile range is largely unlike that of Arabic channels. For Russian and Spanish channels, the median for each language is more similar but still larger, and confers with less variability in the data, given the smaller spreads. Regardless, the spread of average viewership for English channels certainly does confer with greater variability in the data, as well as the increased presence of outliers, which may explain the higher mean and count for average viewership. Though, it is still necessary to analyze further with a regression analysis.
 
 ## Question 5
 
