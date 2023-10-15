@@ -1,0 +1,326 @@
+---
+title: "MD5"
+author: "Sophie Smith"
+embed-resources: true
+format: html
+---
+
+# Chapter 5 - Modern Dive
+
+We are getting into more complex topics, like how to fit and interpret models. In this section, we will use all the tools we have learned - from wrangling to visualization - to make sure we fit appropriate models and that we understand what these models are doing. Models can be powerful inferential tools but they can also be misleading (like anything). It is important that we know what is powering the machinery we are using so that we always know whether to trust the results we get.
+
+In this homework, we are going to be analyzing twitch data. We will learn a couple of tricks for modeling data along the way.
+
+Let's begin by loading the data in our usual way.
+
+```{r message = FALSE}
+library(tidyverse)
+```
+
+```{r}
+twitch_data_1 <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/twitchdata-update.csv")
+
+twitch_data_1
+```
+
+The names of the variables here are a bit annoying. They are capitalized and have spaces which makes them awkward to work with in R. Let me show you a neat trick. First, install a package called `janitor` if you don't have it yet. Then, let's load it and clean the names.
+
+```{r message = FALSE}
+library(janitor)
+```
+
+```{r}
+twitch_data_2 <- clean_names(twitch_data_1)
+
+colnames(twitch_data_2)
+```
+
+Look at how much better they look. We are ready to begin our analysis.
+
+## Question 1
+
+We will begin with an easy question. An almost obvious question. We are going to examine whether the number of followers a streamer has is predictive of the average viewers they get. Following what the chapter told us, let's look at the raw data. Show me the `average_viewers` and the `followers` for five random streamers.
+
+```{r}
+twitch_data_2var <- twitch_data_2 %>%
+  select(channel, average_viewers, followers)
+
+twitch_data_2var %>%
+  sample_n(size = 5)
+```
+
+**What do you notice?**
+
+-   The average number of viewers increases as the number of followers does, too.
+
+Now, let's summarize these two variables. An alternative way you get a summary of your variables of interest is by running `summary()` on them. `Select` our two variables of interest and run `summary()`.
+
+```{r}
+summary(twitch_data_2var)
+```
+
+**Describe the results in a few words. Does anything capture your attention?**
+
+-   One observation is that no matter how large the number of followers is, the average number of viewers does not seem to reach as high as an amount. Additionally, the median for both variables is significantly lower than the mean, which leads me to believe that there are a few data-points with either a large amount of `average_viewers` or `followers`, skewing the mean.
+
+-   Otherwise, there is nothing outstanding in this summary. Simply put, the results of the summary support the aforementioned hypothesis, which is: the average number of viewers increases as the number of followers does, too.
+
+Okay, lastly - but perhaps most importantly - lets visualize the data. Make a scatter-plot with our two variables of interest.
+
+```{r}
+ggplot(twitch_data_2var,
+       aes(x = followers, y = average_viewers)) +
+  labs(x = "Number of Followers", y = "Average Number of Viewers", 
+       title = "Relationship between Followers & Average Viewership", 
+       caption = "Source: Twitch Data") +
+  geom_jitter(alpha = 0.2) +
+  theme_minimal()
+```
+
+**What do you notice?**
+
+-   There are a large number of data-points that are densely-populated in one part of the scatter-plot, making it difficult to interpret further.
+
+Right away, you should notice that the data is packed into a small part of the Cartesian plane. Why? Because we have an uneven distribution - a few channels with a lot of followers and a lot of average viewers. So what should we do? We can transform the data. Remember the `scale_x_log10` trick we learned in the last book? Let's apply it. Make the same plot but adding `scale_x_log10` and `scale_y_log10`.
+
+```{r}
+ggplot(twitch_data_2var,
+       aes(x = followers, y = average_viewers)) +
+  labs(x = "Number of Followers", y = "Average Number of Viewers", 
+       title = "Relationship between Followers & Average Viewership", 
+       caption = "Source: Twitch Data") +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_jitter(alpha = 0.2) +
+  theme_minimal()
+```
+
+**What do you see now? How does the relationship look like?**
+
+-   Now, the data-points are evenly dispersed throughout the scatter-plot. Additionally, there appears to be a positive and strong relationship between the number of followers and the average number of viewers (i.e., as the former increases, so does the latter).
+
+Hopefully you have learned something important here: often the relationship between two variables is not immediately obvious and we need to do some transformations of the data to uncover it. Let's add those transformed variables to our data-set.
+
+```{r}
+twitch_data_2 <- twitch_data_2 %>% 
+  mutate(log_viewers = log10(average_viewers), 
+         log_followers = log10(followers))
+```
+
+## Question 2
+
+Let's actually run a regression. Using `lm()` fit a model where you predict the logarithm of average viewers (`log_viewers`) using the logarithm of followers (`log_followers`). Save the results to an object called `fit1`.
+
+```{r}
+fit1 <- lm(log_viewers ~ log_followers, data = twitch_data_2)
+
+fit1
+```
+
+I am going to show you another way of getting a summary of your model. First, let's install the `broom` package. After, run `tidy()` on your model object (`fit1`).
+
+```{r message = FALSE}
+library(broom)
+```
+
+```{r}
+tidy(fit1)
+```
+
+Before I have you describe your results, I have to tell you that when you transform your variables, interpretation is a bit different. In the situation we are in - where your outcome and explanatory variables have been logged - the coefficients are interpreted as percentage increases. For example, let's say we have a coefficient of $0.4$. We would do the following:
+
+$$ 1.1^{0.4} = 1.03886 $$ And we would interpret our coefficient like this:
+
+> A 10% increase in followers is associated with a 3.9% increase in the average number of viewers.
+
+Now, it's your turn. **Take the coefficient from your model and interpret it in this way.**
+
+$$ 1.1^{0.5885} = 1.05769 $$
+
+-   A 10% increase in followers corresponds with a 5.8% increase in the average number of viewers.
+
+## Question 3
+
+Okay, now let's look at our line of best fit and check the residuals. I am again going to introduce you to an incredibly useful tool from the `broom` package called `augment`. Run the following code:
+
+```{r}
+pred_data <- augment(fit1)
+
+pred_data
+```
+
+Look, it's our original data but also a bunch more information. The `.fitted` column includes our predictions given our line of best fit. `.resid` contains the residuals. Let's visualize our line of best fit:
+
+```{r}
+pred_data %>% 
+  ggplot(aes(x = log_followers, 
+             y = log_viewers)) +
+  geom_jitter(alpha = 0.4) + 
+  geom_line(aes(x = log_followers, 
+                y = .fitted), 
+            col = "orange") + 
+  theme_minimal() +
+  labs(subtitle = "Fitted Model and Raw Data", 
+       title = "Relationship between Followers & Average Viewership", 
+       x = "log(followers)", 
+       y = "log(viewers)", 
+       caption = "Source: Twitch Data")
+```
+
+![](chapter_05_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+**Do you think our model describes the relationship well?**
+
+-   Although it does not travel through every single data-point, which is unexpected (otherwise, the line of best fit would simply represent the data-set), the above model describes the relationship well, since the line of best fits travels directly through the middle of the data --- reflecting the strong and positive relationship identified earlier.
+
+Now, you fit a plot where `log_followers` is in the x-axis and `.resid` is in the y-axis.
+
+```{r}
+pred_data %>% 
+  ggplot(aes(x = log_followers, 
+             y = .resid)) +
+  geom_jitter(alpha = 0.3) +
+  geom_smooth(method = lm) + 
+  theme_minimal() +
+  labs(subtitle = "Fitted Model and Raw Data", 
+       title = "Representation of Followers versus Residuals", 
+       x = "log(followers)", 
+       y = "Residuals",
+       caption = "Source: Twitch Data")
+```
+
+**What do you see? Are there any big residuals? Do they happen in a particular range of our x-axis?**
+
+-   Generally speaking, there are very few rather large residuals. In fact, the majority of data-points remain close to the line of best fit at zero. Additionally, the residuals are evenly distributed both above and below the line of best fit at zero, as well as within the range of 4.5 and 6.5 on the x-axis. All of which suggets that the previous model was a generally accurate prediction.
+
+## Question 4
+
+Let's now look at regression using one categorical variable to predict one continuous variable. Here, I am interested in whether `language` predicts `average_viewers`. This would give us an indication of where the most popular twitch channels come from. I have a hunch that English streamers might be the most popular. Let's see:
+
+First, describe our variables of interest as we did above. I am going to give you less guidance here. I want you to explore the variables:
+
+```{r}
+twitch_lang_view <- twitch_data_2 %>%
+  select(channel, language, average_viewers)
+
+twitch_lang_view %>%
+  sample_n(size = 10)
+```
+
+-   Given the random sample above, there appears to be no obvious relationship between language and the average number of viewers --- at least not at first glance.
+
+```{r}
+summary(twitch_lang_view)
+```
+
+-   Given that language is a categorical variable, rather than a numerical one, it is again difficult to interpret a relationship between the two variables without separating by language. Again, however, the overall median for `average_viewers` is significantly lower than the mean, which leads me to believe that there are a few data-points with a large amount of `average_viewers`, skewing the mean.
+
+Regardless, let's try to summarize the data differently:
+
+```{r message = FALSE}
+library(skimr)
+```
+
+```{r}
+twitch_lang_view |>
+  group_by(language) |>
+  skim(average_viewers)
+```
+
+-   Given the separation by language, this function is a more insightful summary than the previous one.
+
+-   In fact, it appears that Russian, Spanish, Arabic, and English channels have the highest mean for `average_viewers`, which would allow one to think they have the highest count for average viewership. However, it is necessary to plot the data to see exactly what the count is, since the mean is dependent on the number of channels, of which there may only be a handful for each language.
+
+Now, let's plot the two variables via a histogram and box-plot:
+
+```{r}
+ggplot(twitch_lang_view,
+       aes(x = language, y = average_viewers)) +
+  labs(x = "Language", y = "Average Number of Viewers", 
+       title = "Relationship between Language & Average Viewership", 
+       caption = "Source: Twitch Data") +
+  geom_col(fill = "blue") +
+  theme_minimal() +
+  coord_flip()
+```
+
+-   In agreement with the prior summary, English channels confer with the highest count for average viewership. However, unlike the prior results, Russian, Arabic, and Spanish channels do not have as high of a count for average viewership as the mean would allow one to think.
+
+```{r}
+ggplot(twitch_lang_view,
+       aes(x = language, y = average_viewers)) +
+  labs(x = "Language", y = "Average Number of Viewers", 
+       title = "Relationship between Language & Average Viewership", 
+       caption = "Source: Twitch Data") +
+  geom_boxplot() +
+  scale_y_log10() +
+  theme_minimal() +
+  coord_flip()
+```
+
+-   Admittedly, the box-plot is a lot more difficult to interpret than the histogram. However, it does provide more insight into the spread and presence of outliers in data.
+
+-   For English channels, the median and interquartile range is not unlike that of Arabic channels. For Russian and Spanish channels, the median for each language is larger but confers with less variability in the data, given the smaller spread. Regardless, the spread of average viewership for English channels certainly does confer with greater variability in the data, as well as the increased presence of outliers, which may explain the higher mean and count for average viewership.
+
+## Question 5
+
+Now, we are ready to fit the model. Fit a linear regression where your outcome variable is `average_viewers` and your independent variable is `language`. Let me teach you another trick here. When your categorical variable has many categories, it makes sense to establish your reference category *outside of the model*. This ensures that, when you are reading your coefficients, you know what you are comparing them to. Let's set `English` as our reference category.
+
+```{r}
+twitch_data_3 <- twitch_data_2 %>% 
+  mutate(language = as.factor(language), 
+         language = relevel(language, ref = "English"))
+
+twitch_data_3 <- twitch_data_3 %>% 
+  mutate(log_viewers = log10(average_viewers))
+```
+
+Now, fit your model. Your coefficients will tell you how many more (or fewer) average viewers are related to streaming in languages different than English. Interpret the results.
+
+```{r}
+fit2 <- lm(average_viewers ~ language, data = twitch_data_3)
+
+fit2
+```
+
+**How is my prediction doing?**
+
+-   As a reminder, the language of reference is English. Any positive coefficient for channels of another language indicates how many more average viewers that language has relative to English channels.
+
+-   With that said, Russian, Spanish, and Arabic channels all have positive coefficients, which implies that --- if the baseline of viewership for English channels is 5,113 --- channels of these other languages had 1,481, 1,337, and 569 (respectively) more average viewers than that. Thus, the original prediction is perhaps not as accurate as one would have thought.
+
+## Question 6
+
+Explore the residuals here using a similar plot as above.
+
+```{r}
+pred_data_2 <- augment(fit2)
+
+pred_data_2
+```
+
+```{r}
+pred_data_2 %>% 
+  ggplot(aes(x = average_viewers, 
+             y = .resid)) +
+  geom_jitter(alpha = 0.2) +
+  geom_smooth(method = lm) + 
+  scale_x_log10() +
+  theme_minimal() +
+  labs(subtitle = "Fitted Model and Raw Data", 
+       title = "Representation of Average Viewership versus Residuals", 
+       x = "Average Number of Viewers", 
+       y = "Residuals",
+       caption = "Source: Twitch Data")
+```
+
+**There are a couple of points our model really missed - which ones were they?**
+
+```{r}
+pred_data_2 %>% 
+  filter(.resid >= 50000)
+```
+
+-   Based on the results of the filter, the model above missed two points: one of an English channel at an average viewership of 147,643, and one of a Russian channel at an average viewership of 126,232 --- which confirms the prediction above that channels of these two languages may have data-points with a high average viewership, skewing their mean.
+
+-   Overall, though, the model above is a poor prediction of the data-set. That is because the data-points are not evenly split above and below the line of best fit, as well as the fact that the line of best fit does not travel directly through the middle of the data-points. As a result, any data-point above the line of best fit is an underestimation of true average viewership, whereas any data-points below the line of best fit is an overestimation of true average viewership.
