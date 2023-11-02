@@ -1,0 +1,24 @@
+---
+title: "Project Idea"
+author: "Sophie Smith"
+format: html
+editor: visual
+---
+
+## Content
+
+-   Often, as a senior at Duke University, I am told that my degree from an elite school will open doors for me that were previously closed --- particularly as it relates to salary and job opportunities.
+
+-   With that in mind, I am curious to discover if university-type can predict post-undergraduate success, primarily through an analysis of starting salaries from various universities.
+
+-   Therefore, my specific research question is: "Does graduation from an elite universitiy within the United States confer with greater post-undergraduate success, as indicated (for this purpose) by a higher starting salary?"
+
+## Potential Data Sources
+
+-   Admittedly, my data-source will require some manipulation to achieve an answer to my research question, but here are two that I found already: (1) https://collegescorecard.ed.gov/data and (2) https://www.wsj.com/public/resources/documents/info-Salaries_for_Colleges_by_Type-sort.html.
+
+## Conversation with Classmates
+
+-   **Ava Biancardi** does not have a research question, but she plans to focus on something related to *Spotify*. More specifically, she wants to explore trends in artists with the most monthly listeners.
+
+-   **Victor Martinez-Patlan** plans to explore *World Football* data to determine if the stereotype that Spanish and English players get paid more is true, primarily through a salary analysis.
