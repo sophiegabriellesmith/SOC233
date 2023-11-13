@@ -1,0 +1,217 @@
+---
+title: "MD7"
+author: "Sophie Smith"
+embed-resources: true
+source: "html"
+---
+
+# Homework for MD Chapter 7
+
+Here, we are going to practice and reinforce some of the ideas that we encountered in chapter 5. Sampling is crucial for understanding any type of data analysis. When you are presented with brand new set of data, it is always useful to think: what groups or populations am I capturing in these data? To what groups or populations can I extrapolate insights I draw from these data? Do I have enough data? To answer these questions, it is essential to grasp sampling; to think about how features of a population might (or might not) make their way to our spreadsheets.
+
+Say we are interested in finding out the proportion of science Nobel prizes that have been awarded to people born in the US. We could easily Google this, the information is available. But imagine that for some reason we are only able to access portions of the data - i.e. samples. How would we go about finding this proportion and how confident would we be in our findings.
+
+Let's begin by loading in a data frame containing all Nobel prize winners.
+
+```{r message = FALSE}
+library(tidyverse)
+library(here)
+library(moderndive)
+theme_set(theme_minimal())
+```
+
+```{r message = FALSE}
+nobel_winners <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/nobel_winners.csv")
+```
+
+We've talked about it in-class once before, but `here::here()` is a function that allows you to find any file inside any sub-folder inside your project. So, I'm telling R to find a `Data` folder and then grab the `nobel_winners.csv` file inside. **`here`** is a very handy package when you're dealing with complicated projects with many sub-folders.
+
+Given that we are only interested in scientific Nobel prizes, let's get rid of the Nobel Peace prize. We will also create a column that indicates whether the recipient was born in the US.
+
+```{r}
+nobel_winners_flt <- nobel_winners %>% 
+  filter(category != "Peace") %>% 
+  mutate(is_us = if_else(birth_country == "United States of America", 1, 0))
+```
+
+**Now, what is the *true* proportion of US-born Nobel prize winners?**
+
+```{r}
+true_prop <- nobel_winners_flt %>% 
+  group_by(is_us) %>% 
+  summarise(prop = n()/nrow(nobel_winners_flt))
+
+ggplot() + 
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + 
+  geom_vline(xintercept = true_prop[2,2][[1]], linetype = "dashed")  + 
+  labs(x = "Proportion")
+```
+
+![](chapter_07_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+Now, let's say our friend gives us a random sample of 25 Nobel winners and we calculate our proportion. **How far off would we be?**
+
+```{r}
+set.seed(33)
+
+our_sample <- sample_n(nobel_winners_flt, 
+                       size = 25, 
+                       replace = F)
+
+sample_prop <- our_sample %>% 
+  group_by(is_us) %>% 
+  summarise(prop = n()/nrow(our_sample))
+```
+
+```{r}
+ggplot() + 
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + 
+  geom_vline(xintercept = true_prop[2,2][[1]], linetype = "dashed")  + 
+  geom_vline(xintercept = sample_prop[2,2][[1]], linetype = "dotted", col = "red") +
+  labs(x = "Proportion")
+```
+
+-   We are way above, almost at 50%!
+
+## Question 1
+
+Let's explore some of the vocabulary provided in the chapter. - In this scenario, what is the population? - What is the sampling frame? - What does the black line represent? (hint: the word population is in the name). - What does the red line represent?
+
+-   The **population** refers to anyone who has received a Nobel prize -- whether it be scientific or peace, whether it be in the United States or in another country.
+
+-   The **sampling frame** is the data-set (`nobel_winners_flt`), which represents anyone who has received a Nobel prize -- but specifically, a scientific one in the United States.
+
+-   The **black line** reflects the true proportion of scientific Nobel prize winners in the United States.
+
+-   The **red line** reflects the observed proportion of scientific Nobel prize winners in the United States.
+
+## Question 2
+
+Okay, you probably know what we are doing next. We are going to take repeated samples of differing sizes and explore what the results look like, much like we did in the chapter. This will reinforce the ideas of sampling variability and sample size, which are key.
+
+We will use the `rep_sample_n()` function from the **`moderndive`** package. (This is actually a copy of a function from the **`infer`** package, so it's the sort of function you could continue to use in the future.)
+
+Using this function, take 50 samples of 25 winners each.
+
+```{r}
+set.seed(33)
+
+sample_50_25 <- nobel_winners_flt %>% 
+  rep_sample_n(size = 25, 
+               reps = 50)
+
+sample_50_25_graph <-sample_50_25 %>% 
+  group_by(replicate) %>% 
+  summarize(prop_1 = (sum(is_us)/25))
+```
+
+Plot your results. Be sure to add the mean proportion of your samples and the true proportion we calculated above. (HINT: `summarize()` is going to be useful here.)
+
+```{r}
+sample_50_25_graph %>% 
+  ggplot(aes(x = prop_1)) +
+    geom_histogram(binwidth = 0.05, color = "white") +
+    geom_vline(xintercept = mean(nobel_winners_flt$is_us), 
+               linetype = "dashed") + 
+    geom_vline(xintercept = mean(sample_50_25_graph$prop_1), 
+               linetype = "dashed", color = "red") +
+  labs(x = "Proportion of 25 Scientific Nobel Prize Winners from the United States", 
+       y = "Count", 
+       title = "Sampling Distribution of 50 Proportions") +
+  theme_minimal()
+```
+
+## Question 3
+
+Now, use this function to take 50 samples of 100 winners each.
+
+```{r}
+set.seed(33)
+
+sample_50_100 <- nobel_winners_flt %>% 
+  rep_sample_n(size = 100, 
+               reps = 50)
+
+sample_50_100_graph <-sample_50_100 %>% 
+  group_by(replicate) %>% 
+  summarize(prop_2 = (sum(is_us)/100))
+```
+
+Plot your results in the same way that you did above.
+
+```{r}
+sample_50_100_graph %>% 
+  ggplot(aes(x = prop_2)) +
+    geom_histogram(binwidth = 0.05, color = "white") +
+    geom_vline(xintercept = mean(nobel_winners_flt$is_us), 
+               linetype = "dashed") + 
+    geom_vline(xintercept = mean(sample_50_100_graph$prop_2), 
+               linetype = "dashed", color = "red") +
+  labs(x = "Proportion of 100 Scientific Nobel Prize Winners from the United States", 
+       y = "Count", 
+       title = "Sampling Distribution of 50 Proportions") +
+  theme_minimal()
+```
+
+**Which one of the two distributions varies more. Can you explain why?**
+
+-   The sampling distribution of 50 proportions with 25 winners demonstrates more variation than the sampling distribution of 50 proportions with 100 winners. The foregoing variation lends itself to the smaller sample size of the former. In other words, as the sample size increases, there are fewer differences due to sampling variation, and the distribution centers more around the same value.
+
+## Question 4
+
+Calculate the standard deviation of your samples collected using a size of 25 and a size of 100.
+
+```{r}
+sample_50_25_graph %>% 
+  summarize(sd = sd(prop_1))
+```
+
+```{r}
+sample_50_100_graph %>% 
+  summarize(sd = sd(prop_2))
+```
+
+**Do these results support your argument above? What does this imply about sample size? What happens to the variability in our estimates as the sample size increases?**
+
+-   Yes, the results above support the previous argument. The standard deviation for the sampling distribution of 50 proportions with 25 winners is 0.105688, whereas the standard deviation for the sampling distribution of 50 proportions with 100 winners is 0.04874591. The latter has a smaller standard deviation than the former. Since standard deviation is a statistic that measures variability around a value, these results imply that, as the sample size increases, the variation decreases.
+
+## Question 5
+
+Now, repeat the same steps above to find the proportion of women who have been awarded the Nobel prize. Draw samples of 100 scientists at a time, and plot your distribution of proportions.
+
+```{r}
+nobel_winners_flt_gender <- nobel_winners_flt %>% 
+  mutate(is_female = if_else(gender == "Female", 1, 0))
+```
+
+```{r}
+set.seed(33)
+
+sample_50_100_f <- nobel_winners_flt_gender %>% 
+  rep_sample_n(size = 100, 
+               reps = 50)
+
+sample_50_100_f_graph <-sample_50_100_f %>% 
+  group_by(replicate) %>% 
+  summarize(prop_3 = (sum(is_female)/100))
+```
+
+```{r}
+sample_50_100_f_graph %>% 
+  ggplot(aes(x = prop_3)) +
+    geom_histogram(binwidth = 0.05, color = "white") +
+    geom_vline(xintercept = mean(nobel_winners_flt_gender$is_female), 
+               linetype = "dashed") + 
+    geom_vline(xintercept = mean(sample_50_100_f_graph$prop_3), 
+               linetype = "dashed", color = "red") +
+  labs(x = "Proportion of 100 Female Scientific Nobel Prize Winners from the United States",
+       y = "Count", 
+       title = "Sampling Distribution of 50 Proportions") +
+  theme_minimal()
+```
+
+## Question 6
+
+The last question is a bit different. Please watch [this video](https://www.youtube.com/watch?v=jvoxEYmQHNM) referenced in the ModernDive book, then explain the **Central Limit Theorem** it in your own words. Be as concise as you can (i.e., use no more than 3-4 sentences) but convince me you really understand the basic idea.
+
+-   The **Central Limit Theorem** states that the sampling distribution of the mean is normally-distributed, as long as the sample size is large enough. In other words, as the sample size increases, the spread of the distribution of averages decreases and thus, the graph of the foregoing distribution is more normal and narrower. This theorem applies, regardless of the initial distribution.
