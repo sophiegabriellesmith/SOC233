@@ -1,0 +1,276 @@
+---
+title: "MD 8-9"
+author: "Sophie Smith"
+embed-resources: true
+format: html
+output: 
+  html_document: 
+    toc: true
+    theme: united
+    keep_md: true
+---
+
+# Chapter 8
+
+We are going to practice re-sampling again, but this time armed with the language we learned in chapter 8. We are going to use three different data-sets along the way. Don't forget to load the packages you will need. To make life easier on yourself, be sure to specify a random number seed using `set.seed()` at the beginning of *each* of your code blocks.
+
+```{r message = FALSE}
+library(tidyverse)
+
+library(moderndive)
+
+library(infer)
+
+theme_set(theme_minimal())
+```
+
+## Question 1
+
+Let's start by redoing the polling analysis we did in class. Be sure to use this exact code (including this specific `set.seed()`) to make the data-set.
+
+```{r}
+set.seed(1108)
+
+poll <- tibble(vote_gop = rbinom(n = 1000,
+                    size = 1,
+                    prob = .53))
+```
+
+I want you to make a **bootstrap 95% percent confidence interval** for GOP (Republican) vote share.
+
+### First Way:
+
+Calculate it using *only* the following functions:
+
+-   `rep_sample_n()`
+-   `group_by()`
+-   `summarize()`
+-   `quantile()`
+
+You may also use the `pull()` or `select()` function if you need them.
+
+A few hints:
+
+1.  Make sure you pay attention to the `replace` option in `rep_sample_n()`.
+2.  When you have the bootstrap distribution, you can get the 95 percent confidence interval by using `quantile(your_data$column, c(.025, .975))`.
+
+**What is the estimated confidence interval?**
+
+```{r}
+set.seed(1108)
+
+bootstrap_1 <- poll %>% 
+  rep_sample_n(size = 1000, reps = 1000, replace = TRUE) %>% 
+  group_by(replicate) %>% 
+  summarize(mean_gop = mean(vote_gop))
+```
+
+```{r}
+quantile(bootstrap_1$mean_gop, c(0.025, 0.975))
+```
+
+-   The estimated 95% confidence interval is from 0.483975 to 0.548000.
+
+### Second Way:
+
+Now do it using *only* the following functions:
+
+-   `specify()`
+-   `generate()`
+-   `calculate()`
+-   `get_ci()`
+
+**What is the estimated confidence interval?**
+
+```{r}
+set.seed(1108)
+
+bootstrap_2 <- poll %>% 
+  specify(response = vote_gop) %>% 
+  generate(reps = 1000, type = "bootstrap") %>% 
+  calculate(stat = "mean") %>% 
+  get_ci(level = 0.95, type = "percentile")
+```
+
+```{r}
+bootstrap_2
+```
+
+**How similar are the two confidence intervals you calculated?** **Why aren't they *exactly* the same if you don't set the same seed?**
+
+-   The 95% confidence intervals are the same in both calculations from 0.483975 to 0.548000.
+
+-   The 95% confidence intervals are the same in both calculations because we set the same seed in both instances (i.e., `set.seed(1108)`). However, if we set different seeds, the 95% confidence intervals would vary, since the `set.seed` function allows for reproducible results when creating variables that use random or arbitrary values.
+
+## History of Rap
+
+Here, we are going to use a data-set that contains the results of a survey conducted where artists and critics listed their favorite rap tracks. For each track we have information about its release data, and what we are going to do is to examine what is the year of that shows up the most (i.e. we are going to try to find out the year when rap peaked).
+
+This is not a silly attempt to make a data analysis course more interesting or relatable, this is a real issue in the sociology of culture. We have evidence [that music sales are higher for old music](https://www.theatlantic.com/ideas/archive/2022/01/old-music-killing-new-music/621339/). Nostalgia is the name of the game. A lot of people really believe that old music was better and organizing their music-listening habits around this idea. So understanding where supposed "experts" place the peak of rap is important and interesting.
+
+The data can be found [here](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-14/polls.csv). Load the data and call the object `rap_poll` and then we'll get started.
+
+```{r message = FALSE}
+rap_poll <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-14/polls.csv")
+```
+
+First of all, let's just keep the #1 song listed by each critic to make things simple. Use `filter()` to keep only those songs where `rank` is equal to 1. The resulting data frame should have 107 rows.
+
+```{r}
+rap_poll <- rap_poll %>% 
+  filter(rank == "1")
+```
+
+## Question 2
+
+Make a histogram of the year each of the tracks was released.
+
+```{r}
+rap_poll %>% 
+  ggplot(aes(x = year)) +
+  geom_histogram(binwidth = 1, color = "white", 
+                 fill = "blue", center = 0) +
+  labs(x = "Year of Release",
+       y = "Count",
+       title = "Top-Ranked Critic Tracks by Year of Release") 
+```
+
+**What is the year of the most commonly named favorite track in this critic poll?**
+
+-   The year of the most-commonly named favorite track in this critic poll is 1994.
+
+**How many critics named a track from this year?**
+
+```{r}
+rap_poll %>% 
+  filter(year == "1994")
+```
+
+-   The number of critics who named a track from 1994 is 14.
+
+## Question 3
+
+Let's assume that these 107 critics are a random sample of a population of critics. If so, it might be useful to construct a 95% confidence interval for the peak of rap. Calculate this interval, using either implementation of the percentile method I asked you to use above.
+
+```{r}
+set.seed(52)
+
+bootstrap_3 <- rap_poll %>% 
+  rep_sample_n(size = 107, reps = 1000, replace = TRUE) %>% 
+  group_by(replicate) %>% 
+  summarize(mean_year = mean(year))
+```
+
+**Report the upper and lower bound of this interval to the nearest year.**
+
+```{r}
+set.seed(52)
+
+quantile(bootstrap_3$mean_year, c(0.025, 0.975))
+```
+
+-   The lower bound is 1993, whereas the upper bound is 1996 -- rounded to the nearest year.
+
+## Question 4
+
+Let's say that instead of asking 107 critics, we had asked 25 critics. What would the confidence interval (again, rounded to the nearest year) be in that case? (HINT: you will probably need to use the "first way" for calculating a confidence interval you used above.)
+
+```{r}
+set.seed(52)
+
+bootstrap_4 <- rap_poll %>% 
+  rep_sample_n(size = 25, reps = 1000, replace = TRUE) %>% 
+  group_by(replicate) %>% 
+  summarize(mean_year = mean(year))
+
+quantile(bootstrap_4$mean_year, c(0.025, 0.975))
+```
+
+**How does the width of this confidence interval compare to the width of the confidence interval when we use the full sample of 107?**
+
+-   When the sample size is 25, the lower bound is 1992, whereas the upper bound is 1998 -- rounded to the nearest year. The width of the 95% confidence interval is greater when the sample size is lower, since there is more uncertainty and thus, it is a less precise estimate.
+
+# Chapter 9
+
+Here, we will reinforce some ideas from Chapter 9. This one is very important, not only because the content itself is important, but because you will see these ideas used and abused everywhere to support all kinds of silly arguments. A thorough understanding of these ideas will be a great BS detector when you are confronted with other people's data analyses.
+
+We will be using soccer data from the English Premier League to examine whether home field advantage is a thing in this league. Do teams who play at home - with their own fans - win more on average? We will use your new hypothesis testing skills to examine this question. We will use data from all games of the legendary 2015/2016 season. Don't know why it's legendary? Look it up. It's worth it. Best sports story of all time some say.
+
+Let's begin by reading in the data and looking at it.
+
+```{r message = FALSE}
+pl_data <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/premier_league.csv")
+
+pl_data
+```
+
+We have 4 columns then: the home team, the away team, the score difference (from the standpoint of the home team), and the result. We have three different types of results: an away win (aw), a home win (hw), and a draw (d). What we are interested in then is the proportion of home wins. What is the rate of winning at home, and is it different that mere chance?
+
+## Question 5
+
+Use your data wrangling skills to calculate the proportion of home wins during the 2015/2016 season.
+
+```{r}
+hw_proportion <- pl_data %>% 
+  filter(result == "hw") %>% 
+  summarize(prop_hw = n() / nrow(pl_data))
+
+hw_proportion
+```
+
+-   The proportion of home wins is 0.4131579.
+
+## Question 6
+
+Now, we are going to shuffle. We are going to examine what proportion we would expect if a home win was equally likely as any other result. This one is a bit more interesting than the examples in the chapter because there are 3 choices instead of 2. Below, you will find some code that simulates our data-set, reshuffled, 1000 times. Here, however, we assume that an away-win, a draw, and a home-win have equal probability. Run the script and plot the resulting proportions as a histogram. (Hint: `sampled_proportions` will be stored as a *value* in your environment. You may have to convert it to a data frame to plot as a histogram.)
+
+```{r}
+set.seed(22)
+
+sampled_proportions <- c()
+
+for (i in 1:1000) {
+  
+  sampled_results <- sample(c("aw", "hw" , "d"), 
+                            size = 380,
+                            replace = TRUE, 
+                            prob = c(1/3,1/3,1/3))
+  prop <- sum(sampled_results == "hw")/380
+  sampled_proportions[i] <- prop
+  
+}
+```
+
+```{r}
+prop_df <- data.frame(proportions = sampled_proportions)
+
+prop_df %>% 
+  ggplot(aes(x = proportions)) +
+  geom_histogram(binwidth = 0.01, color = "white", 
+                 fill = "green") +
+  labs(x = "Proportion of Home Wins",
+       y = "Count",
+       title = "Simulation-Based Distribution of the Proportion of Home Wins")
+```
+
+**Describe the histogram in a sentence or two.**
+
+-   The histogram shows a simulation-based distribution of home wins under the null hypothesis. The value of 0.33 for the proportion of home wins possesses the greatest count, and thus, the histogram suggets that each result (i.e., home wins, away wins, or draws) is equally as likely as the other.
+
+**How does the proportion you found in Question 5 compare to the proportion we would expect if a home win was as equally likely as any other result?**
+
+-   The proportion of home wins in Question 5 is 0.4131579. That value is larger than the expected value of 0.33, if a home win was as equally likely as any other result (i.e., away wins or draws). The observed value of 0.4131579 in Question 5 is greater than the expected value of 0.33 in an equally likely case, suggesting that home wins are more frequent than if each result was equally likely.
+
+## Question 7
+
+**In this scenario, what would be the null hypothesis and the alternative hypothesis? Provide enough detail so that I know you understand.**
+
+-   H~0~ : The null hypothesis states that there is no difference in the proportion of home wins relative to any other result (i.e., away wins, draws, etc.).
+
+-   H~A~ : The alternative hypothesis states that there is a difference in the proportion of home wins relative to any other result (i.e., away wins, draws, etc.).
+
+## Question 8
+
+**What would a p-value mean in this example?**
+
+-   Assuming the null hypothesis is true, a p-value is the probability of obtaining a test statistic just as or more extreme than the expected test statistic. In this example, the p-value is the probability that the observed proportion of home wins is just as or more extreme than the expected proportion of home wins, assuming an equally likely case in the latter. Alternatively, the p-value visually reflects the proportion of the null distribution that is shaded on both tails of the histogram.
