@@ -200,13 +200,9 @@ In Table 4, "Elite" universities serve as the reference category. Thus, the coef
 
 The regression equation for median starting salary is as follows:
 
-$$
-\widehat{y} = \widehat{median~starting~salary} = b_{0}  + b_{Engineering}(x) ∗ 1_{Engineering}(x) +
-$$
+$\widehat{y} = \widehat{median~starting~salary} = b_{0}  + b_{Engineering}(x) ∗ 1_{Engineering}$
 
-$$
- b_{Liberal~Arts}(x) ∗ 1_{Liberal~Arts}(x) + b_{Party}(x) ∗ 1_{Party}(x) + b_{State}(x) ∗ 1_{State}(x) 
-$$
+$b_{Liberal~Arts}(x) ∗ 1_{Liberal~Arts}(x) + b_{Party}(x) ∗ 1_{Party}(x) + b_{State}(x) ∗ 1_{State}(x)$
 
 Under this regression equation, each variable represents the following:
 
