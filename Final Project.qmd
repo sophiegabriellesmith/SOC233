@@ -1,6 +1,7 @@
 ---
 title: "Elite Undergraduate Universities as Predictive of Higher Starting Salaries in the United States"
 author: "Sophie Smith"
+embed-resources: true
 format: html
 output:
   html_document:
@@ -221,7 +222,7 @@ Under this regression equation, each variable represents the following:
 
 -   $b_{State}~(-44653.87)$: is the offset slope from the baseline for "State" universities, which represents the decrease in median starting salary when "State" universities are included in the equation
 
-## 3.4: Inference for Basic Regression 
+## 3.4: Inference for Basic Regression
 
 Given the research question, there exists two hypotheses: null hypothesis and alternative hypothesis. In particular, those two hypotheses are:
 
@@ -238,7 +239,7 @@ knitr::kable(confit1, caption = "Table 5: 95% confidence intervals with 'Elite' 
 
 Based on Table 4, the following observations of the 95% Confidence Interval exist:
 
--   For "Engineering Universities, we are 95% confident that the median starting salary --- relative to "Elite" universities --- decreases by a value within the range of \$28,339.36 and \$34,305.34.
+-   For "Engineering Universities, we are 95% confident that the median starting salary --- relative to"Elite" universities --- decreases by a value within the range of \$28,339.36 and \$34,305.34.
 
 -   For "Liberal Arts" Universities, we are 95% confident that the median starting salary --- relative to "Elite" universities --- decreases by a value within the range of \$40,479.04 and \$45,307.34.
 
@@ -252,12 +253,12 @@ The "test" for our null hypothesis is whether our 95% Confidence Intervals inclu
 
 ## 4.1: Conclusions
 
-Based on our exploratory data and regression analyses, we conclude that there is evidence to reject the null hypothesis, which states no difference in the median starting salary across university types. Specifically, the data indicates that graduates of "Elite" universities possess greater median starting salaries relative to graduates of "Engineering", "Liberal Arts", "Party", and "State" universities. The difference is substantial, with graduates of "Elite" universities earning approximately \$28,000 to \$47,000 more in their first career than graduates of "Engineering", "Liberal Arts", "Party", and "State" universities. Further analyses could control for potential confounding factors; nonetheless, the research answers the question that graduation from an "Elite" university confers with greater post-undergraduate success, at least regarding higher starting salaries.
+Based on our exploratory data and regression analyses, we conclude that there is evidence to reject the null hypothesis, which states no difference in the median starting salary across university types. Specifically, the data indicates that graduates of "Elite" universities possess greater median starting salaries relative to graduates of "Engineering", "Liberal Arts", "Party", and "State" universities. The difference is substantial, with graduates of "Elite" universities earning approximately \$28,000 to \$47,000 more in their first career than graduates of "Engineering", "Liberal Arts", "Party", and "State" universities. Further analyses could control for potential confounding factors; nonetheless, the research concludes that graduation from an "Elite" university confers with greater post-undergraduate success, as it pertains to higher starting salaries.
 
-## 4.2: Limitations 
+## 4.2: Limitations
 
-Undoubtedly, our exploratory data and regression analyses answers the research question by stating that graduation from an "Elite" university confers with greater post-undergraduate success, at least regarding higher starting salaries. Nonetheless, there are some key limitations. Firstly, the data does not control for academic performance, such as GPA or test scores, which likely differs across university type and impacts hiring outcomes. Secondly, students that gain admission to "Elite" universities may possess unobserved characteristics, like discipline and motivation, that separately drive post-undergraduate success. Thirdly, the definitions for university types based on reputation are also rather coarse and could group dissimilar institutions, or even separate a university from its dual reputations. Overall, the introduction of relevant confounding factors for multivariate control would strengthen the ability to make definite causal claims.
+Regardless of our conclusion, there remain some key limitations. Firstly, the data does not control for academic performance, such as GPA or test scores, which likely differs across university type and impacts hiring outcomes. Secondly, students that gain admission to "Elite" universities may possess unobserved characteristics, like discipline and motivation, that drive post-undergraduate success separately from university type. Thirdly, the definitions for university types, which are based on reputations, are also rather coarse and could group dissimilar institutions, or even separate a university from its dual reputations. Overall, the introduction of relevant confounding factors for multivariate control would strengthen the ability to make definite causal claims.
 
 ## 4.3 Future Directions
 
-Further analyses could build more comprehensive models that account for confounding factors, such academic achievement, socioeconomic status, and intended career field. Access to individual-level data would also allow better control for confounding differences between students across university types. Additionally, longer-term outcome data tracking mid- and late- career trajectories would also provide a comprehensive picture of "Elite" university impacts. Overall, while this initial investigation demonstrates an intriguing pattern, further research could elucidate the advantages of an "Elite" university. Nonetheless, the data prompts critical reflection around hiring practices based solely on university prestige.
+Further analyses could build more comprehensive models that account for confounding factors, such academic achievement, unobserved characteristics, etc. Access to individual-level data would also allow better control for confounding differences between students, such as gender or industry of interest. Additionally, longer-term tracking of mid- and late- career trajectories would also provide a comprehensive picture of the impact of "Elite" university attendance. Overall, while this initial investigation demonstrates an intriguing pattern, further research could elucidate the advantages of an "Elite" university. Regardless, the data prompts reflection of hiring practices based on prestige alone.
