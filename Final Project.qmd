@@ -1,0 +1,263 @@
+---
+title: "Elite Undergraduate Universities as Predictive of Higher Starting Salaries in the United States"
+author: "Sophie Smith"
+format: html
+output:
+  html_document:
+    toc: true
+    toc_float: true
+editor: visual
+echo: false
+toc: true
+toc-title: Contents
+toc-location: left
+---
+
+# 1. Introduction
+
+One visual has occupied my senior year at Duke, that is: the busy manager in human resources, reviewing stacks of applications for post-undergraduate careers in finance and consulting. After hundreds of resumes, the details of each applicant undoubtedly blur together. Perhaps the busy manager does what some do --- defaults to hiring from elite universities.[^1]
+
+[^1]: https://hbr.org/2020/09/graduates-of-elite-universities-get-paid-more-do-they-perform-better
+
+Graduation from an elite university is often touted as a fast-track to career success. As a senior at Duke University, I am repeatedly told that my degree guarantees career opportunities that are not salient to my peers at non-elite universities. The aforementioned notion has, thus, spurred my interest in the following question: Does graduation from an elite university within the United States confer with greater post-undergraduate success, as indicated by higher starting salaries?
+
+To address such, I utilized data from the U.S. Department of Education's College Scorecard[^2] and PayScale[^3] to create a data-set, which includes 277 undergraduate universities in the United States. Within the data-set, the variables of interest include: university, university type, median starting salary, and median mid-career salary. For the purposes of research, an "elite university" is one listed as Top 20 in the *Best National University Rankings* by U.S. News and World Report in 2021.[^4]
+
+[^2]: https://collegescorecard.ed.gov/data/
+
+[^3]: https://www.payscale.com/college-salary-report/bachelors
+
+[^4]: https://www.collegekickstart.com/blog/item/u-s-news-world-report-posts-2021-college-rankings
+
+# 2. Exploratory Data Analysis
+
+As aforementioned, the data-set includes four variables of interest, which are: university, university type, median starting salary, and median mid-career salary. Below is an explanation of the key variables:
+
+-   **University:** The name of each specific university
+
+-   **University Type:** The general category of the university, such as "Elite", "Engineering", "Party", "Liberal Arts", or "State", focusing on the reputation
+
+-   **Median Starting Salary:** The median salary earned by graduates from each university in their first job post-graduation, reflecting the middle-most salary students can expect at the start of their careers
+
+-   **Median Mid-Career Salary:** The median salary earned by alumni from each university mid-way through their careers, albeit unused
+
+In summary, the data-set tracks the typical early salaries of graduates from a variety of universities categorized by their general reputation. This allows for a comparison of starting salary outcomes across the five university types. With that said, here is the prevalence of each university type in data-set:
+
+```{r message = FALSE}
+library(tidyverse)
+library(here)
+library(moderndive)
+library(infer)
+library(janitor)
+library(varhandle)
+library(skimr)
+library(broom)
+```
+
+```{r}
+university_data <- read.csv("~/Desktop/university_data.csv")
+```
+
+```{r}
+university_data <- clean_names(university_data)
+```
+
+```{r}
+university_data_2 <- university_data %>% 
+  group_by(university_type) %>% 
+  summarize(number = n()) %>%
+    mutate(frequency = number / sum(number),
+           percentage = round((frequency*100), 0))
+
+knitr::kable(university_data_2,
+             caption = "Table 1: Prevalence of each university type in data-set.",
+             digits = 2)
+```
+
+Based on Table 1, we observed the following:
+
+-   "Elite" universities have a count of 20, which suggests that 20 of the universities included in the data-set are elite universities, encompassing 7% of the data-set.
+
+-   "Engineering" universities have a count of 17, which suggests that 17 of the universities included in the data-set are elite universities, representing 6%.
+
+-   "Liberal arts" universities have a count of 47, which suggests that 47 of the universities included in the data-set are elite universities, encompassing 17%.
+
+-   "Party" universities have a count of 20, which suggests that 20 of the universities included in the data-set are elite universities, representing 7%.
+
+-   "State" universities have a count of 173, which suggests that 173 of the universities included in the data-set are elite universities, encompassing 62%.
+
+Now, let us examine a random subset of five universities in the data-set:
+
+```{r}
+set.seed(894342)
+
+table_university_data_1 <- university_data %>%
+  sample_n(size = 5) 
+
+table_university_data_2 <- head(table_university_data_1)
+
+knitr::kable(table_university_data_2,
+             caption = "Table 2: Random subset of five universities in data-set.")
+```
+
+Based on Table 2, "Elite" universities have greater median starting salaries than "Liberal Arts", "Party", "Engineering", and "State" universities. Though, this is not sufficient enough to draw a final conclusion, as further analysis is required. Here are the summary statistics on median starting salary by university type:
+
+```{r message = FALSE}
+breakdown_by_type <- university_data %>% 
+  group_by(university_type) %>% 
+  select(median_starting_salary) %>% 
+  skim()
+
+knitr::kable(breakdown_by_type,
+             caption = "Table 3: Summary statistics on median starting salary 
+             by university type.")
+```
+
+Based on Table 3, the mean for median starting salary at "Elite" universities is significantly greater than the mean for median starting salary at the other university types. Thus, given Table 2 and Table 3, we predict that attendance at "Elite" universities confers with greater post-undergraduate success, as indicated by higher starting salaries.
+
+```{r}
+ggplot(data = university_data, mapping = aes(x = median_starting_salary, 
+                                             fill = university_type)) +
+  geom_histogram(binwidth = 5000, color = "black") +
+  labs(x = "Median Starting Salary ($)", y = "Count", 
+       title = "Range of Median Starting Salary ($) by University Type", 
+       caption = "Figure 1", 
+       legend = "University Type",
+       fill = "University Type") +
+   theme(plot.caption = element_text(hjust=0.5)) +
+   facet_wrap(~university_type) +
+  coord_flip()
+```
+
+```{r}
+ggplot(data = university_data, mapping = aes(x = university_type, 
+       y = median_starting_salary, fill = university_type)) +
+  labs( x = "University Type", y = "Median Starting Salary ($)", 
+       title = "Distribution of Median Starting Salary by University Type",
+       caption = "Figure 2",
+       fill = "University Type") +
+  theme(plot.caption = element_text(hjust=0.5)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.2) +
+  coord_flip()
+```
+
+Next, we explored the range of median starting salaries by university type. Based on Figure 1, the range of median starting salaries is skewed to the top (i.e., greater numerical values) for "Elite" universities but otherwise skewed to the bottom (i.e., lower numerical values) for the other university types. Based on Figure 2, median starting salaries are the highest at "Elite" universities, the lowest at "State", "Party", and "Liberal Arts" universities schools, and somewhere in the middle at "Engineering" universities --- given their respective positions on the box-plot.
+
+Visually, the differences are quite extreme between the "Elite" universities and the other universities. In particular, there are two "Elite" universities with outlying median starting salaries, which are: Massachusetts Institute of Technology and California Institute of Technology; furthermore, there are two "State" universities with outlying median starting salaries, which are: Caly Poly Luis Obispo and the University of Missouri. Aside from those two outliers, there is little variation in the median starting salaries for "Elite" universities --- as well as for "State", "Party", and "Liberal Arts" universities --- given the smaller interquartile ranges. Conversely, there is more variation (albeit not that much more) in the median starting salaries for "Engineering" universities, as given by the larger interquartile range.
+
+Most importantly, the combination of Figure 1 and Figure 2 suggests a log transformation on median starting salary to reduce skewness, as demonstrated below. However, given the lack of residual analysis, we will not revisit the log transformation later on in the report.
+
+```{r}
+university_data_log <- university_data %>% 
+  mutate(log_salary = log(median_starting_salary))
+```
+
+```{r}
+ggplot(data = university_data_log, mapping = aes(x = log_salary, 
+                                             fill = university_type)) +
+  geom_density(alpha = 0.5) +
+  labs(x = "log(Median Starting Salary)", y = "Count", 
+       title = "Density Plot of log(Median Starting Salary) by University Type", 
+       caption = "Figure 3", 
+       legend = "University Type",
+       fill = "University Type") +
+   theme(plot.caption = element_text(hjust=0.5)) +
+   facet_wrap(~university_type) 
+```
+
+# 3. Basic Linear Regression Models
+
+## 3.1: Methods
+
+Given the existence of one explanatory variable, the model is a basic linear regression. Thus, the components of our basic linear regression model are as follows:
+
+-   Outcome variable (𝑦): Median starting salary (\$)
+
+-   Explanatory variable (𝓍): University type
+
+## 3.2: Results of Basic Regression
+
+Under basic linear regression, median starting salary is a function of university type, and the operational unit is each university as indicated by each row in the data-set. Below is the basic linear regression table:
+
+```{r}
+university_data_3 <- university_data %>% 
+  mutate(university_type = as.factor(university_type), 
+         university_type = relevel(university_type, ref = "Elite"))
+
+fit1 <- lm(median_starting_salary ~ university_type, data = university_data_3)
+
+fit2 <- tidy(fit1)
+
+knitr::kable(fit2,
+             caption = "Table 4: Regression model with 'Elite' universities as reference.")
+```
+
+In Table 4, "Elite" universities serve as the reference category. Thus, the coefficients indicate how much greater or lesser the median starting salaries are for each university type relative to "Elite" universities. With that said, "Engineering", "Liberal Arts", "Party", and "State" universities all have negative coefficients, which implies that --- if the baseline of median starting salary is \$88,640 at "Elite" universities --- those other university types had \$31,322, \$42,893, \$42,925, and \$44,654 (respectively) less in median starting salary than that. Thus far, our original prediction appears to hold true.
+
+## 3.3: Interpretation of Regression Model
+
+The regression equation for median starting salary is as follows:
+
+$$
+\widehat{y} = \widehat{median~starting~salary} = b_{0}  + b_{Engineering}(x) ∗ 1_{Engineering}(x) +
+$$
+
+$$
+ b_{Liberal~Arts}(x) ∗ 1_{Liberal~Arts}(x) + b_{Party}(x) ∗ 1_{Party}(x) + b_{State}(x) ∗ 1_{State}(x) 
+$$
+
+Under this regression equation, each variable represents the following:
+
+-   $1_{Engineering}(x), 1_{Liberal~Arts}(x), 1_{Party}(x), and~1_{State}(x)$: represent the four indicator functions, which return: "1" when the university type in-question is included, and "0" when the university type in-question is not included
+
+-   $b_{0} ~ (88640.00)$: is the intercept, which represents the median starting salary when all four indicator functions $1_{Engineering}(x), 1_{Liberal~Arts}(x),$ $1_{Party}(x), and~1_{State}(x)$ equal "0" --- in other words, the median starting salary when only "Elite" universities are included in the equation
+
+-   $b_{Engineering}~(-31322.35)$: is the offset slope from the baseline for "Engineering" universities, which represents the decrease in median starting salary when "Engineering" universities are included in the equation
+
+-   $b_{Liberal~Arts}~(-42893.19)$: is the offset slope from the baseline for "Liberal Arts" universities, which represents the decrease in median starting salary when "Liberal Arts" universities are included in the equation
+
+-   $b_{Party}~(-42925.00)$: is the offset slope from the baseline for "Party" universities, which represents the decrease in median starting salary when "Party" universities are included in the equation
+
+-   $b_{State}~(-44653.87)$: is the offset slope from the baseline for "State" universities, which represents the decrease in median starting salary when "State" universities are included in the equation
+
+## 3.4: Inference for Basic Regression 
+
+Given the research question, there exists two hypotheses: null hypothesis and alternative hypothesis. In particular, those two hypotheses are:
+
+-   $H_0$: The null hypothesis states that there is no difference in the median starting salary between "Elite" universities and the other university types, that is: the offset slope for each university type is 0
+
+-   $H_A$: The alternative hypothesis states that there is a difference in the median starting salary between "Elite" universities and the other university types, that is: the offset slope for each university type is not 0
+
+Based on our basic linear regression, we already created the model to test the two hypotheses. Let us look at Table 4 for our 95% Confidence Interval:
+
+```{r}
+confit1 <- confint(fit1) 
+knitr::kable(confit1, caption = "Table 5: 95% confidence intervals with 'Elite' universities as reference.")
+```
+
+Based on Table 4, the following observations of the 95% Confidence Interval exist:
+
+-   For "Engineering Universities, we are 95% confident that the median starting salary --- relative to "Elite" universities --- decreases by a value within the range of \$28,339.36 and \$34,305.34.
+
+-   For "Liberal Arts" Universities, we are 95% confident that the median starting salary --- relative to "Elite" universities --- decreases by a value within the range of \$40,479.04 and \$45,307.34.
+
+-   For "Party" Universities, we are 95% confident that the median starting salary --- relative to "Elite" universities --- decreases by a value within the range of \$40,065.50 and \$45,784.50.
+
+-   For "State" Universities, we are 95% confident that the median starting salary --- relative to "Elite" universities --- decreases by a value within the range of \$42,518.22 and \$46,789.53.
+
+The "test" for our null hypothesis is whether our 95% Confidence Intervals include "0". Given that the aforementioned ranges do not include "0", that indicates that the slope for each university type is non-zero, allowing us to reject the null hypothesis.
+
+# 4. Discussion
+
+## 4.1: Conclusions
+
+Based on our exploratory data and regression analyses, we conclude that there is evidence to reject the null hypothesis, which states no difference in the median starting salary across university types. Specifically, the data indicates that graduates of "Elite" universities possess greater median starting salaries relative to graduates of "Engineering", "Liberal Arts", "Party", and "State" universities. The difference is substantial, with graduates of "Elite" universities earning approximately \$28,000 to \$47,000 more in their first career than graduates of "Engineering", "Liberal Arts", "Party", and "State" universities. Further analyses could control for potential confounding factors; nonetheless, the research answers the question that graduation from an "Elite" university confers with greater post-undergraduate success, at least regarding higher starting salaries.
+
+## 4.2: Limitations 
+
+Undoubtedly, our exploratory data and regression analyses answers the research question by stating that graduation from an "Elite" university confers with greater post-undergraduate success, at least regarding higher starting salaries. Nonetheless, there are some key limitations. Firstly, the data does not control for academic performance, such as GPA or test scores, which likely differs across university type and impacts hiring outcomes. Secondly, students that gain admission to "Elite" universities may possess unobserved characteristics, like discipline and motivation, that separately drive post-undergraduate success. Thirdly, the definitions for university types based on reputation are also rather coarse and could group dissimilar institutions, or even separate a university from its dual reputations. Overall, the introduction of relevant confounding factors for multivariate control would strengthen the ability to make definite causal claims.
+
+## 4.3 Future Directions
+
+Further analyses could build more comprehensive models that account for confounding factors, such academic achievement, socioeconomic status, and intended career field. Access to individual-level data would also allow better control for confounding differences between students across university types. Additionally, longer-term outcome data tracking mid- and late- career trajectories would also provide a comprehensive picture of "Elite" university impacts. Overall, while this initial investigation demonstrates an intriguing pattern, further research could elucidate the advantages of an "Elite" university. Nonetheless, the data prompts critical reflection around hiring practices based solely on university prestige.

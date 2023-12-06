@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Sophie Smith">
+
+<title>Elite Undergraduate Universities as Predictive of Higher Starting Salaries in the United States</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Final Project_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Final Project_files/libs/quarto-html/quarto.js"></script>
+<script src="Final Project_files/libs/quarto-html/popper.min.js"></script>
+<script src="Final Project_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Final Project_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Final Project_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Final Project_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Final Project_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Final Project_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Final Project_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">1. Introduction</a></li>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">2. Exploratory Data Analysis</a></li>
+  <li><a href="#basic-linear-regression-models" id="toc-basic-linear-regression-models" class="nav-link" data-scroll-target="#basic-linear-regression-models">3. Basic Linear Regression Models</a>
+  <ul class="collapse">
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">3.1: Methods</a></li>
+  <li><a href="#results-of-basic-regression" id="toc-results-of-basic-regression" class="nav-link" data-scroll-target="#results-of-basic-regression">3.2: Results of Basic Regression</a></li>
+  <li><a href="#interpretation-of-regression-model" id="toc-interpretation-of-regression-model" class="nav-link" data-scroll-target="#interpretation-of-regression-model">3.3: Interpretation of Regression Model</a></li>
+  <li><a href="#inference-for-basic-regression" id="toc-inference-for-basic-regression" class="nav-link" data-scroll-target="#inference-for-basic-regression">3.4: Inference for Basic Regression</a></li>
+  </ul></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">4. Discussion</a>
+  <ul class="collapse">
+  <li><a href="#conclusions" id="toc-conclusions" class="nav-link" data-scroll-target="#conclusions">4.1: Conclusions</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">4.2: Limitations</a></li>
+  <li><a href="#future-directions" id="toc-future-directions" class="nav-link" data-scroll-target="#future-directions">4.3 Future Directions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Elite Undergraduate Universities as Predictive of Higher Starting Salaries in the United States</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Sophie Smith </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level1">
+<h1>1. Introduction</h1>
+<p>One visual has occupied my senior year at Duke, that is: the busy manager in human resources, reviewing stacks of applications for post-undergraduate careers in finance and consulting. After hundreds of resumes, the details of each applicant undoubtedly blur together. Perhaps the busy manager does what some do — defaults to hiring from elite universities.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Graduation from an elite university is often touted as a fast-track to career success. As a senior at Duke University, I am repeatedly told that my degree guarantees career opportunities that are not salient to my peers at non-elite universities. The aforementioned notion has, thus, spurred my interest in the following question: Does graduation from an elite university within the United States confer with greater post-undergraduate success, as indicated by higher starting salaries?</p>
+<p>To address such, I utilized data from the U.S. Department of Education’s College Scorecard<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> and PayScale<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> to create a data-set, which includes 277 undergraduate universities in the United States. Within the data-set, the variables of interest include: university, university type, median starting salary, and median mid-career salary. For the purposes of research, an “elite university” is one listed as Top 20 in the <em>Best National University Rankings</em> by U.S. News and World Report in 2021.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+</section>
+<section id="exploratory-data-analysis" class="level1">
+<h1>2. Exploratory Data Analysis</h1>
+<p>As aforementioned, the data-set includes four variables of interest, which are: university, university type, median starting salary, and median mid-career salary. Below is an explanation of the key variables:</p>
+<ul>
+<li><p><strong>University:</strong> The name of each specific university</p></li>
+<li><p><strong>University Type:</strong> The general category of the university, such as “Elite”, “Engineering”, “Party”, “Liberal Arts”, or “State”, focusing on the reputation</p></li>
+<li><p><strong>Median Starting Salary:</strong> The median salary earned by graduates from each university in their first job post-graduation, reflecting the middle-most salary students can expect at the start of their careers</p></li>
+<li><p><strong>Median Mid-Career Salary:</strong> The median salary earned by alumni from each university mid-way through their careers, albeit unused</p></li>
+</ul>
+<p>In summary, the data-set tracks the typical early salaries of graduates from a variety of universities categorized by their general reputation. This allows for a comparison of starting salary outcomes across the five university types. With that said, here is the prevalence of each university type in data-set:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Table 1: Prevalence of each university type in data-set.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">university_type</th>
+<th style="text-align: right;">number</th>
+<th style="text-align: right;">frequency</th>
+<th style="text-align: right;">percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Elite</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Engineering</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Liberal Arts</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Party</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">State</td>
+<td style="text-align: right;">173</td>
+<td style="text-align: right;">0.62</td>
+<td style="text-align: right;">62</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Based on Table 1, we observed the following:</p>
+<ul>
+<li><p>“Elite” universities have a count of 20, which suggests that 20 of the universities included in the data-set are elite universities, encompassing 7% of the data-set.</p></li>
+<li><p>“Engineering” universities have a count of 17, which suggests that 17 of the universities included in the data-set are elite universities, representing 6%.</p></li>
+<li><p>“Liberal arts” universities have a count of 47, which suggests that 47 of the universities included in the data-set are elite universities, encompassing 17%.</p></li>
+<li><p>“Party” universities have a count of 20, which suggests that 20 of the universities included in the data-set are elite universities, representing 7%.</p></li>
+<li><p>“State” universities have a count of 173, which suggests that 173 of the universities included in the data-set are elite universities, encompassing 62%.</p></li>
+</ul>
+<p>Now, let us examine a random subset of five universities in the data-set:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Table 2: Random subset of five universities in data-set.</caption>
+<colgroup>
+<col style="width: 34%">
+<col style="width: 16%">
+<col style="width: 23%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">university</th>
+<th style="text-align: left;">university_type</th>
+<th style="text-align: right;">median_starting_salary</th>
+<th style="text-align: right;">median_mid_career_salary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Lewis &amp; Clark College</td>
+<td style="text-align: left;">Liberal Arts</td>
+<td style="text-align: right;">38900</td>
+<td style="text-align: right;">72600</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Arizona State University (ASU)</td>
+<td style="text-align: left;">Party</td>
+<td style="text-align: right;">47400</td>
+<td style="text-align: right;">84100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Wentworth Institute of Technology</td>
+<td style="text-align: left;">Engineering</td>
+<td style="text-align: right;">53000</td>
+<td style="text-align: right;">96700</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Columbia University</td>
+<td style="text-align: left;">Elite</td>
+<td style="text-align: right;">89300</td>
+<td style="text-align: right;">156000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Binghamton University</td>
+<td style="text-align: left;">State</td>
+<td style="text-align: right;">53600</td>
+<td style="text-align: right;">95900</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Based on Table 2, “Elite” universities have greater median starting salaries than “Liberal Arts”, “Party”, “Engineering”, and “State” universities. Though, this is not sufficient enough to draw a final conclusion, as further analysis is required. Here are the summary statistics on median starting salary by university type:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Table 3: Summary statistics on median starting salary by university type.</caption>
+<colgroup>
+<col style="width: 5%">
+<col style="width: 13%">
+<col style="width: 9%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_type</th>
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: left;">university_type</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">numeric.mean</th>
+<th style="text-align: right;">numeric.sd</th>
+<th style="text-align: right;">numeric.p0</th>
+<th style="text-align: right;">numeric.p25</th>
+<th style="text-align: right;">numeric.p50</th>
+<th style="text-align: right;">numeric.p75</th>
+<th style="text-align: right;">numeric.p100</th>
+<th style="text-align: left;">numeric.hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">median_starting_salary</td>
+<td style="text-align: left;">Elite</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">88640.00</td>
+<td style="text-align: right;">7754.007</td>
+<td style="text-align: right;">76000</td>
+<td style="text-align: right;">84050</td>
+<td style="text-align: right;">88150</td>
+<td style="text-align: right;">90200</td>
+<td style="text-align: right;">106400</td>
+<td style="text-align: left;">▅▇▇▁▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">median_starting_salary</td>
+<td style="text-align: left;">Engineering</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">57317.65</td>
+<td style="text-align: right;">6188.016</td>
+<td style="text-align: right;">46200</td>
+<td style="text-align: right;">53000</td>
+<td style="text-align: right;">58100</td>
+<td style="text-align: right;">61100</td>
+<td style="text-align: right;">71800</td>
+<td style="text-align: left;">▅▇▇▅▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">median_starting_salary</td>
+<td style="text-align: left;">Liberal Arts</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">45746.81</td>
+<td style="text-align: right;">4368.855</td>
+<td style="text-align: right;">38500</td>
+<td style="text-align: right;">42250</td>
+<td style="text-align: right;">45500</td>
+<td style="text-align: right;">48600</td>
+<td style="text-align: right;">54500</td>
+<td style="text-align: left;">▅▇▇▃▃</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">median_starting_salary</td>
+<td style="text-align: left;">Party</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">45715.00</td>
+<td style="text-align: right;">3685.716</td>
+<td style="text-align: right;">41300</td>
+<td style="text-align: right;">42500</td>
+<td style="text-align: right;">44600</td>
+<td style="text-align: right;">47975</td>
+<td style="text-align: right;">52900</td>
+<td style="text-align: left;">▇▅▅▃▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">median_starting_salary</td>
+<td style="text-align: left;">State</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">43986.13</td>
+<td style="text-align: right;">4068.545</td>
+<td style="text-align: right;">34800</td>
+<td style="text-align: right;">41400</td>
+<td style="text-align: right;">43600</td>
+<td style="text-align: right;">46200</td>
+<td style="text-align: right;">57200</td>
+<td style="text-align: left;">▂▇▇▂▁</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Based on Table 3, the mean for median starting salary at “Elite” universities is significantly greater than the mean for median starting salary at the other university types. Thus, given Table 2 and Table 3, we predict that attendance at “Elite” universities confers with greater post-undergraduate success, as indicated by higher starting salaries.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Final-Project_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Final-Project_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Next, we explored the range of median starting salaries by university type. Based on Figure 1, the range of median starting salaries is skewed to the top (i.e., greater numerical values) for “Elite” universities but otherwise skewed to the bottom (i.e., lower numerical values) for the other university types. Based on Figure 2, median starting salaries are the highest at “Elite” universities, the lowest at “State”, “Party”, and “Liberal Arts” universities schools, and somewhere in the middle at “Engineering” universities — given their respective positions on the box-plot.</p>
+<p>Visually, the differences are quite extreme between the “Elite” universities and the other universities. In particular, there are two “Elite” universities with outlying median starting salaries, which are: Massachusetts Institute of Technology and California Institute of Technology; furthermore, there are two “State” universities with outlying median starting salaries, which are: Caly Poly Luis Obispo and the University of Missouri. Aside from those two outliers, there is little variation in the median starting salaries for “Elite” universities — as well as for “State”, “Party”, and “Liberal Arts” universities — given the smaller interquartile ranges. Conversely, there is more variation (albeit not that much more) in the median starting salaries for “Engineering” universities, as given by the larger interquartile range.</p>
+<p>Most importantly, the combination of Figure 1 and Figure 2 suggests a log transformation on median starting salary to reduce skewness, as demonstrated below. However, given the lack of residual analysis, we will not revisit the log transformation later on in the report.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Final-Project_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="basic-linear-regression-models" class="level1">
+<h1>3. Basic Linear Regression Models</h1>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">3.1: Methods</h2>
+<p>Given the existence of one explanatory variable, the model is a basic linear regression. Thus, the components of our basic linear regression model are as follows:</p>
+<ul>
+<li><p>Outcome variable (𝑦): Median starting salary ($)</p></li>
+<li><p>Explanatory variable (𝓍): University type</p></li>
+</ul>
+</section>
+<section id="results-of-basic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="results-of-basic-regression">3.2: Results of Basic Regression</h2>
+<p>Under basic linear regression, median starting salary is a function of university type, and the operational unit is each university as indicated by each row in the data-set. Below is the basic linear regression table:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Table 4: Regression model with ‘Elite’ universities as reference.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">88640.00</td>
+<td style="text-align: right;">1027.048</td>
+<td style="text-align: right;">86.30561</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">university_typeEngineering</td>
+<td style="text-align: right;">-31322.35</td>
+<td style="text-align: right;">1515.190</td>
+<td style="text-align: right;">-20.67223</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">university_typeLiberal Arts</td>
+<td style="text-align: right;">-42893.19</td>
+<td style="text-align: right;">1226.251</td>
+<td style="text-align: right;">-34.97914</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">university_typeParty</td>
+<td style="text-align: right;">-42925.00</td>
+<td style="text-align: right;">1452.465</td>
+<td style="text-align: right;">-29.55320</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">university_typeState</td>
+<td style="text-align: right;">-44653.87</td>
+<td style="text-align: right;">1084.792</td>
+<td style="text-align: right;">-41.16355</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>In Table 4, “Elite” universities serve as the reference category. Thus, the coefficients indicate how much greater or lesser the median starting salaries are for each university type relative to “Elite” universities. With that said, “Engineering”, “Liberal Arts”, “Party”, and “State” universities all have negative coefficients, which implies that — if the baseline of median starting salary is $88,640 at “Elite” universities — those other university types had $31,322, $42,893, $42,925, and $44,654 (respectively) less in median starting salary than that. Thus far, our original prediction appears to hold true.</p>
+</section>
+<section id="interpretation-of-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation-of-regression-model">3.3: Interpretation of Regression Model</h2>
+<p>The regression equation for median starting salary is as follows:</p>
+<p><span class="math display">\[
+\widehat{y} = \widehat{median~starting~salary} = b_{0}  + b_{Engineering}(x) ∗ 1_{Engineering}(x) +
+\]</span></p>
+<p><span class="math display">\[
+b_{Liberal~Arts}(x) ∗ 1_{Liberal~Arts}(x) + b_{Party}(x) ∗ 1_{Party}(x) + b_{State}(x) ∗ 1_{State}(x)
+\]</span></p>
+<p>Under this regression equation, each variable represents the following:</p>
+<ul>
+<li><p><span class="math inline">\(1_{Engineering}(x), 1_{Liberal~Arts}(x), 1_{Party}(x), and~1_{State}(x)\)</span>: represent the four indicator functions, which return: “1” when the university type in-question is included, and “0” when the university type in-question is not included</p></li>
+<li><p><span class="math inline">\(b_{0} ~ (88640.00)\)</span>: is the intercept, which represents the median starting salary when all four indicator functions <span class="math inline">\(1_{Engineering}(x), 1_{Liberal~Arts}(x),\)</span> <span class="math inline">\(1_{Party}(x), and~1_{State}(x)\)</span> equal “0” — in other words, the median starting salary when only “Elite” universities are included in the equation</p></li>
+<li><p><span class="math inline">\(b_{Engineering}~(-31322.35)\)</span>: is the offset slope from the baseline for “Engineering” universities, which represents the decrease in median starting salary when “Engineering” universities are included in the equation</p></li>
+<li><p><span class="math inline">\(b_{Liberal~Arts}~(-42893.19)\)</span>: is the offset slope from the baseline for “Liberal Arts” universities, which represents the decrease in median starting salary when “Liberal Arts” universities are included in the equation</p></li>
+<li><p><span class="math inline">\(b_{Party}~(-42925.00)\)</span>: is the offset slope from the baseline for “Party” universities, which represents the decrease in median starting salary when “Party” universities are included in the equation</p></li>
+<li><p><span class="math inline">\(b_{State}~(-44653.87)\)</span>: is the offset slope from the baseline for “State” universities, which represents the decrease in median starting salary when “State” universities are included in the equation</p></li>
+</ul>
+</section>
+<section id="inference-for-basic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="inference-for-basic-regression">3.4: Inference for Basic Regression</h2>
+<p>Given the research question, there exists two hypotheses: null hypothesis and alternative hypothesis. In particular, those two hypotheses are:</p>
+<ul>
+<li><p><span class="math inline">\(H_0\)</span>: The null hypothesis states that there is no difference in the median starting salary between “Elite” universities and the other university types, that is: the offset slope for each university type is 0</p></li>
+<li><p><span class="math inline">\(H_A\)</span>: The alternative hypothesis states that there is a difference in the median starting salary between “Elite” universities and the other university types, that is: the offset slope for each university type is not 0</p></li>
+</ul>
+<p>Based on our basic linear regression, we already created the model to test the two hypotheses. Let us look at Table 4 for our 95% Confidence Interval:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Table 5: 95% confidence intervals with ‘Elite’ universities as reference.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">2.5 %</th>
+<th style="text-align: right;">97.5 %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">86618.03</td>
+<td style="text-align: right;">90661.97</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">university_typeEngineering</td>
+<td style="text-align: right;">-34305.34</td>
+<td style="text-align: right;">-28339.36</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">university_typeLiberal Arts</td>
+<td style="text-align: right;">-45307.34</td>
+<td style="text-align: right;">-40479.04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">university_typeParty</td>
+<td style="text-align: right;">-45784.50</td>
+<td style="text-align: right;">-40065.50</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">university_typeState</td>
+<td style="text-align: right;">-46789.53</td>
+<td style="text-align: right;">-42518.22</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Based on Table 4, the following observations of the 95% Confidence Interval exist:</p>
+<ul>
+<li><p>For “Engineering Universities, we are 95% confident that the median starting salary — relative to”Elite” universities — decreases by a value within the range of $28,339.36 and $34,305.34.</p></li>
+<li><p>For “Liberal Arts” Universities, we are 95% confident that the median starting salary — relative to “Elite” universities — decreases by a value within the range of $40,479.04 and $45,307.34.</p></li>
+<li><p>For “Party” Universities, we are 95% confident that the median starting salary — relative to “Elite” universities — decreases by a value within the range of $40,065.50 and $45,784.50.</p></li>
+<li><p>For “State” Universities, we are 95% confident that the median starting salary — relative to “Elite” universities — decreases by a value within the range of $42,518.22 and $46,789.53.</p></li>
+</ul>
+<p>The “test” for our null hypothesis is whether our 95% Confidence Intervals include “0”. Given that the aforementioned ranges do not include “0”, that indicates that the slope for each university type is non-zero, allowing us to reject the null hypothesis.</p>
+</section>
+</section>
+<section id="discussion" class="level1">
+<h1>4. Discussion</h1>
+<section id="conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions">4.1: Conclusions</h2>
+<p>Based on our exploratory data and regression analyses, we conclude that there is evidence to reject the null hypothesis, which states no difference in the median starting salary across university types. Specifically, the data indicates that graduates of “Elite” universities possess greater median starting salaries relative to graduates of “Engineering”, “Liberal Arts”, “Party”, and “State” universities. The difference is substantial, with graduates of “Elite” universities earning approximately $28,000 to $47,000 more in their first career than graduates of “Engineering”, “Liberal Arts”, “Party”, and “State” universities. Further analyses could control for potential confounding factors; nonetheless, the research answers the question that graduation from an “Elite” university confers with greater post-undergraduate success, at least regarding higher starting salaries.</p>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">4.2: Limitations</h2>
+<p>Undoubtedly, our exploratory data and regression analyses answers the research question by stating that graduation from an “Elite” university confers with greater post-undergraduate success, at least regarding higher starting salaries. Nonetheless, there are some key limitations. Firstly, the data does not control for academic performance, such as GPA or test scores, which likely differs across university type and impacts hiring outcomes. Secondly, students that gain admission to “Elite” universities may possess unobserved characteristics, like discipline and motivation, that separately drive post-undergraduate success. Thirdly, the definitions for university types based on reputation are also rather coarse and could group dissimilar institutions, or even separate a university from its dual reputations. Overall, the introduction of relevant confounding factors for multivariate control would strengthen the ability to make definite causal claims.</p>
+</section>
+<section id="future-directions" class="level2">
+<h2 class="anchored" data-anchor-id="future-directions">4.3 Future Directions</h2>
+<p>Further analyses could build more comprehensive models that account for confounding factors, such academic achievement, socioeconomic status, and intended career field. Access to individual-level data would also allow better control for confounding differences between students across university types. Additionally, longer-term outcome data tracking mid- and late- career trajectories would also provide a comprehensive picture of “Elite” university impacts. Overall, while this initial investigation demonstrates an intriguing pattern, further research could elucidate the advantages of an “Elite” university. Nonetheless, the data prompts critical reflection around hiring practices based solely on university prestige.</p>
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>https://hbr.org/2020/09/graduates-of-elite-universities-get-paid-more-do-they-perform-better<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>https://collegescorecard.ed.gov/data/<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>https://www.payscale.com/college-salary-report/bachelors<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>https://www.collegekickstart.com/blog/item/u-s-news-world-report-posts-2021-college-rankings<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
